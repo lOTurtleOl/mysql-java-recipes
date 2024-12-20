@@ -1,9 +1,11 @@
 package recipes;
 
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.Scanner;
 
+import recipes.entity.Recipe;
 import recipes.exception.DbException;
 import recipes.service.RecipeService;
 
@@ -15,7 +17,8 @@ public class Recipes {
 	
 	// @formatter:off
 	private List<String> operations = List.of(
-			"1) Create and populate all tables"
+			"1) Create and populate all tables",
+			"2) Add a recipe"
 	);
 	//@formatter:on
 	
@@ -29,9 +32,10 @@ public class Recipes {
 		boolean done = false;
 		
 		while(!done) {
-			int operation = getOperation();
 			
 			try {
+				int operation = getOperation();
+				
 			switch(operation) {
 			case -1:
 				done = exitMenu();
@@ -39,6 +43,10 @@ public class Recipes {
 				
 			case 1:
 				createTables();
+				break;
+				
+			case 2:
+				addRecipe();
 				break;
 				
 			default:
@@ -49,6 +57,41 @@ public class Recipes {
 			}
 		}
 		
+	}
+	/**
+	 * 
+	 */
+	private void addRecipe() {
+		String name = getStringInput("Enter the recipe name");
+		String notes = getStringInput("Enter recipe notes");
+		Integer numServings = getIntInput("Enter number of servings");
+		Integer prepMinutes = getIntInput("Enter prep time in minutes");
+		Integer cookMinutes = getIntInput("Enter cook time in minutes");
+		
+		LocalTime prepTime = minutesToLocalTime(prepMinutes);
+		LocalTime cookTime = minutesToLocalTime(cookMinutes);
+		
+		Recipe recipe = new Recipe();
+		
+		recipe.setRecipeName(name);
+		recipe.setNotes(notes);
+		recipe.setNumServings(numServings);
+		recipe.setPrepTime(prepTime);
+		recipe.setCookTime(cookTime);
+		
+		Recipe dbRecipe = recipeService.addRecipe(recipe);
+		System.out.println("You added this recipe:\n" + dbRecipe);
+	}
+	/**
+	 * @param numMinutes
+	 * @return
+	 */
+	private LocalTime minutesToLocalTime(Integer numMinutes) {
+		int min = Objects.isNull(numMinutes) ? 0 : numMinutes;
+		int hours = min / 60;
+		int minutes = min % 60;
+		
+		return LocalTime.of(hours, minutes);
 	}
 	/**
 	 * 
